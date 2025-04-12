@@ -17,7 +17,7 @@ Ankaa is a Vue based web application designed to foster community engagement by 
 - [TypeScript](https://www.typescriptlang.org)
 - [Supabase](https://supabase.com)
 
-**`NOTE`**: This project uses [Supabase](https://supabase.com) for [authentication](https://supabase.com/auth) and [database](https://supabase.com/database)([PostgreSQL](https://www.postgresql.org)) services. If you encounter issues with authentication or database-related functions, please visit [Supabase Status](https://status.supabase.com) to check if Supabase services are fully operational. Note that we are not affiliated with Supabase, and any outages or disruptions related to Supabase are beyond our control.
+**`NOTE`**: This project uses [Supabase](https://supabase.com) for [authentication](https://supabase.com/auth) and [database](https://supabase.com/database)([PostgreSQL](https://www.postgresql.org)) services. If you encounter issues with authentication or database-related functions, please visit [Supabase Status](https://status.supabase.com) to check if Supabase services are fully operational. Also, Supabase by default imposes rate-limits to 2 emails/hour, unless increased manually. Note that we are not affiliated with Supabase, and any outages or disruptions related to Supabase are beyond our control.
 
 ---
 
