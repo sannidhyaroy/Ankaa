@@ -23,11 +23,6 @@ const router = createRouter({
       component: () => import('@/views/JoinView.vue'),
     },
     {
-      path: '/profile',
-      name: 'profile',
-      component: () => import('@/views/ProfileView.vue'),
-    },
-    {
       path: '/dashboard',
       name: 'dashboard',
       component: () => import('@/views/DashboardView.vue'),
