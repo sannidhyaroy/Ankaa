@@ -10,6 +10,17 @@ Ankaa is a Vue based web application designed to foster community engagement by 
 
 ---
 
+### Tech Stack
+
+- [Vue 3](https://vuejs.org)
+- [Vite](https://vite.dev)
+- [TypeScript](https://www.typescriptlang.org)
+- [Supabase](https://supabase.com)
+
+**`NOTE`**: This project uses [Supabase](https://supabase.com) for [authentication](https://supabase.com/auth) and [database](https://supabase.com/database)([PostgreSQL](https://www.postgresql.org)) services. If you encounter issues with authentication or database-related functions, please visit [Supabase Status](https://status.supabase.com) to check if Supabase services are fully operational. Note that we are not affiliated with Supabase, and any outages or disruptions related to Supabase are beyond our control.
+
+---
+
 ## Getting Started
 
 ### Prerequisites
