@@ -1,59 +1,39 @@
-<script>
+<script setup>
 import { ref } from 'vue'
+import { supabase } from '../lib/supabase'
 
-export default {
-  name: 'JoinView',
-  setup() {
-    const form = ref({
-      name: '',
-      email: '',
-      password: '',
+const loading = ref(false)
+const email = ref('')
+
+const handleLogin = async () => {
+  try {
+    loading.value = true
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.value,
     })
-
-    const handleSignup = () => {
-      // TODO: Add signup logic here (remove console.log statements)
-      console.log('Name:', form.value.name)
-      console.log('Email:', form.value.email)
-      console.log('Password:', form.value.password)
+    if (error) throw error
+    alert('Check your email for the login link!')
+  } catch (error) {
+    if (error instanceof Error) {
+      alert(error.message)
     }
-
-    return {
-      form,
-      handleSignup,
-    }
-  },
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
 <template>
   <div class="join-view">
-    <h1>Join Us</h1>
-    <form @submit.prevent="handleSignup">
+    <h1>Join the network</h1>
+    <form @submit.prevent="handleLogin">
       <div class="form-group">
-        <label for="name">Name</label>
-        <input type="text" id="name" v-model="form.name" placeholder="Enter your name" required />
+        <label for="email">Email ID</label>
+        <input type="email" id="email" v-model="email" placeholder="Enter your email" required />
       </div>
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input
-          type="email"
-          id="email"
-          v-model="form.email"
-          placeholder="Enter your email"
-          required
-        />
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          v-model="form.password"
-          placeholder="Enter your password"
-          required
-        />
-      </div>
-      <button type="submit" class="join-button">Join</button>
+      <button type="submit" class="join-button" :disabled="loading">
+        {{ loading ? 'Loading' : 'Send magic link' }}
+      </button>
     </form>
   </div>
 </template>

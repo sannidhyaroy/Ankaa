@@ -9,9 +9,6 @@ defineProps<{
 
 const count = ref(0)
 const router = useRouter()
-const login = () => {
-  router.push('/login')
-}
 const join = () => {
   router.push('/join')
 }
@@ -22,7 +19,6 @@ const join = () => {
   <p>{{ tagline }}</p>
 
   <div class="card">
-    <button class="login" type="button" @click="login()">Log into network</button>
     <button class="join" type="button" @click="join()">Join the network</button>
   </div>
 
@@ -49,8 +45,12 @@ const join = () => {
   gap: 0.6rem;
   justify-content: center;
 }
-.join {
+button {
+  border: none;
   background: #2a4747;
+}
+button:hover {
+  background-color: #315b53;
 }
 .license {
   color: #888;
