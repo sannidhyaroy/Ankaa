@@ -6,7 +6,7 @@ Bringing neighbours together - one task at a time.
 
 ## Overview
 
-Ankaa is a Vue based web application designed to foster community engagement by connecting neighbors and enabling them to collaborate on tasks. Users can post tasks they need help with, and can view tasks posted by others (sorted by closest distance). They can reach our to the relevant person, if they want to collaborate on a task.
+Ankaa is a Vue based web application designed to foster community engagement by letting neighbors discover, connect and enabling them to collaborate on tasks. Users can post tasks they need help with, and can view tasks posted by others (sorted by closest distance). They can reach out to the relevant person, if they want to collaborate on a task.
 
 ---
 
@@ -26,25 +26,21 @@ Ensure you have the following installed:
     git clone https://github.com/sannidhyaroy/Ankaa.git
     cd Ankaa
     ```
-2.  Switch to feature branch:
-    ```bash
-    git checkout feat/supabase
-    ```
-3.  Install node modules:
+2.  Install node modules:
     ```bash
     npm install
     ```
-4.  Configure a Supabase Project:
+3.  Configure a Supabase Project:
     - From the [Supabase Dashboard](https://supabase.com/dashboard/projects), select `New Project`.
     - Follow the on-screen instructions to choose your Organization, enter a Project name, a database password and your region (preferably closest to you for lower latency).
     - Keep the default Security Options and Advanced Configuration, and click on `Create Project`.
-5.  Note your API details:
+4.  Note your API details:
     - Select your Supabase Project from the [Supabase Dashboard](https://supabase.com/dashboard/projects).
     - Navigate to `Project Settings` from the left toolbar menu.
     - Nagivate to the `Data API` page under `Configuration` from the left sidebar..
     - Note the Project URL, it's the RESTful endpoint for querying and managing your database. You'll need this later.
       Under Project API Keys, note your anon key, you'll need this key to connect to your database later.
-6.  Setup Environment Variables:
+5.  Setup Environment Variables:
     ```bash/
     cp -v .env.example .env
     ```
@@ -54,7 +50,7 @@ Ensure you have the following installed:
     ```bash
     chmod 600 .env
     ```
-7.  To preview, you can run the application in dev mode:
+6.  To preview, you can run the application in dev mode:
     ```bash
     npm run dev
     ```
