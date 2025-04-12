@@ -1,25 +1,16 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { useAuth } from './lib/auth'
 import { RouterView, useRouter } from 'vue-router'
-import { supabase } from './lib/supabase'
+import { watch } from 'vue'
 
-const session = ref()
+const { user } = useAuth() // Use the composable for user state
 const router = useRouter()
 
-onMounted(() => {
-  supabase.auth.getSession().then(({ data }) => {
-    session.value = data.session
-    if (session.value) {
-      router.push('/dashboard') // Redirect to Dashboard if logged in
-    }
-  })
-
-  supabase.auth.onAuthStateChange((_, _session) => {
-    session.value = _session
-    if (_session) {
-      router.push('/dashboard') // Redirect to Dashboard on login
-    }
-  })
+// Watch for changes in the user state and handle routing
+watch(user, (_user) => {
+  if (_user) {
+    router.push('/dashboard') // Redirect to Dashboard if logged in
+  }
 })
 </script>
 
