@@ -1,5 +1,10 @@
 # Ankaa
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/1f5898f9-62ea-4651-bd54-ec9d783a6b4a/deploy-status)](https://app.netlify.com/sites/ankaaunite/deploys)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
+[![Vue 3](https://img.shields.io/badge/Vue-3-4FC08D?style=flat-square)](https://vuejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-4.5-blue?style=flat-square)](https://www.typescriptlang.org)
+
 Bringing neighbours together - one task at a time.
 
 ---
@@ -7,6 +12,8 @@ Bringing neighbours together - one task at a time.
 ## Overview
 
 Ankaa is a Vue based web application designed to foster community engagement by letting neighbors discover, connect and enabling them to collaborate on tasks. Users can post tasks they need help with, and can view tasks posted by others (sorted by closest distance). They can reach out to the relevant person, if they want to collaborate on a task.
+
+**Hosted Instance:** Ankaa is deployed to Netlify at [https://ankaa.thenoton.com](https://ankaa.thenoton.com).
 
 ---
 
