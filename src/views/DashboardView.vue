@@ -202,7 +202,7 @@ export default {
 
     <div v-if="createTaskDialogVisible" class="dialog">
       <div class="dialog-content">
-        <h3>Create Task</h3>
+        <h2>Create Task</h2>
         <form @submit.prevent="createTask">
           <div class="form-group">
             <label for="task-title">Title</label>
@@ -238,7 +238,7 @@ export default {
 
     <div v-if="updateProfileDialogVisible" class="dialog">
       <div class="dialog-content">
-        <h3>Update Profile</h3>
+        <h2>Update Profile</h2>
         <form @submit.prevent="updateProfile">
           <div class="form-group">
             <label for="full-name">Full Name</label>
@@ -338,11 +338,13 @@ button:hover {
 }
 
 .dialog-content {
-  background-color: rgb(30, 30, 30);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  width: 400px;
+  border-radius: 2em;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 35vw;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .form-group {
@@ -361,7 +363,7 @@ textarea {
   padding: 8px;
   box-sizing: border-box;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 1em;
 }
 
 textarea {
