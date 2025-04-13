@@ -11,7 +11,6 @@ export default {
   setup() {
     const tasks = ref<any[]>([])
     const loading = ref(true)
-    const dropdownOpen = ref(false)
     const createTaskDialogVisible = ref(false)
     const updateProfileDialogVisible = ref(false)
 
@@ -29,37 +28,39 @@ export default {
     })
 
     const fetchTasks = async () => {
-      const { data, error } = await supabase.from('tasks').select('*')
-      if (error) console.error('Error fetching tasks:', error)
-      else tasks.value = data || []
+      const { data: tasksData, error: tasksError } = await supabase
+        .from('tasks')
+        .select('*, profiles(full_name)')
+
+      if (tasksError) console.error('Error fetching tasks:', tasksError)
+      else {
+        tasks.value = tasksData.map((task) => ({
+          ...task,
+          created_by: task.profiles?.full_name || 'Unknown',
+        }))
+      }
       loading.value = false
     }
 
-    const ensureProfileExists = async () => {
+    const fetchProfile = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) return
 
-      const { data: existing, error } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .single()
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
 
-      if (error && error.code === 'PGRST116') {
-        const { error: insertError } = await supabase.from('profiles').insert({
-          id: user.id,
-          full_name: '',
-          phone: '',
-        })
-        if (insertError) console.error('Error inserting profile:', insertError)
-        else console.log('Profile created')
-      }
-    }
-
-    const toggleDropdown = () => {
-      dropdownOpen.value = !dropdownOpen.value
+      if (error) {
+        if (error.code === 'PGRST116') {
+          const { error: insertError } = await supabase.from('profiles').insert({
+            id: user.id,
+            full_name: '',
+            phone: '',
+          })
+          if (insertError) console.error('Error inserting profile:', insertError)
+          else console.log('Profile created')
+        } else console.error('Error fetching profile:', error)
+      } else profile.value = data
     }
 
     const logout = async () => {
@@ -92,7 +93,6 @@ export default {
       const { error } = await supabase.from('tasks').insert([
         {
           ...newTask.value,
-          created_by: user.id,
         },
       ])
       if (error) console.error('Error creating task:', error)
@@ -146,17 +146,15 @@ export default {
     }
 
     onMounted(() => {
-      ensureProfileExists()
+      fetchProfile()
       fetchTasks()
     })
 
     return {
       tasks,
       loading,
-      dropdownOpen,
       createTaskDialogVisible,
       newTask,
-      toggleDropdown,
       logout,
       showCreateTaskDialog,
       closeCreateTaskDialog,
@@ -177,14 +175,9 @@ export default {
     <header class="dashboard-header">
       <h1 class="dashboard-title">Dashboard</h1>
       <div class="header-actions">
-        <button @click="showCreateTaskDialog" class="create-task-button">Create Task</button>
-        <div class="profile-menu">
-          <button @click="toggleDropdown" class="profile-button">P</button>
-          <div v-if="dropdownOpen" class="dropdown-menu">
-            <button @click="showUpdateProfileDialog">Manage Profile</button>
-            <button @click="logout">Logout</button>
-          </div>
-        </div>
+        <button @click="showCreateTaskDialog" class="primarybtn">Create Task</button>
+        <button @click="showUpdateProfileDialog">Manage Profile</button>
+        <button @click="logout" class="warning-button">Log Out</button>
       </div>
     </header>
     <main>
@@ -232,8 +225,10 @@ export default {
             </label>
           </div>
           <div class="form-actions">
-            <button type="submit">Create</button>
-            <button type="button" @click="closeCreateTaskDialog">Cancel</button>
+            <button type="submit" class="primarybtn">Create</button>
+            <button type="button" @click="closeCreateTaskDialog" class="warning-button">
+              Cancel
+            </button>
           </div>
         </form>
       </div>
@@ -252,8 +247,10 @@ export default {
             <input type="text" id="phone" v-model="profile.phone" />
           </div>
           <div class="form-actions">
-            <button type="submit">Update</button>
-            <button type="button" @click="closeUpdateProfileDialog">Cancel</button>
+            <button type="submit" class="primarybtn">Update</button>
+            <button type="button" @click="closeUpdateProfileDialog" class="warning-button">
+              Cancel
+            </button>
           </div>
         </form>
       </div>
@@ -282,48 +279,6 @@ export default {
   margin: 0;
 }
 
-.profile-menu {
-  position: relative;
-}
-
-.profile-button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.profile-button:hover {
-  background-color: #0056b3;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: black;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-}
-
-.dropdown-menu button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-}
-
 .tasks-list {
   display: flex;
   flex-direction: column;
@@ -342,17 +297,35 @@ export default {
   gap: 10px;
 }
 
-.create-task-button {
-  padding: 8px 12px;
-  background-color: #28a745;
+button {
+  background-color: #2a4747;
+  border: none;
+}
+
+button:hover {
+  background-color: #315b53;
+}
+
+.primarybtn {
+  background-color: green;
   color: white;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
 }
 
-.create-task-button:hover {
+.primarybtn:hover {
   background-color: #218838;
+}
+
+.warning-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.warning-button:hover {
+  background-color: #e64555;
 }
 
 .dialog {
