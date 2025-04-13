@@ -37,6 +37,7 @@ export default {
         tasks.value = tasksData.map((task) => ({
           ...task,
           created_by: task.profiles?.full_name || 'Anonymous',
+          created_on: new Date(task.created_on).toLocaleString(),
         }))
       }
       loading.value = false
@@ -193,7 +194,7 @@ export default {
           :title="task.title"
           :description="task.description"
           :created-by="task.created_by"
-          :created-on="task.created_at"
+          :created-on="task.created_on"
           @delete-task="deleteTask(task.id)"
         />
       </div>

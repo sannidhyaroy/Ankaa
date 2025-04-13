@@ -3,7 +3,7 @@ create table profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text not null,
   phone text,
-  created_at timestamp default now()
+  created_on timestamp default now()
 );
 create table tasks (
   id uuid primary key default gen_random_uuid(),
@@ -12,7 +12,7 @@ create table tasks (
   created_by uuid references profiles(id) on delete set null,
   location_lat double precision,
   location_lng double precision,
-  created_at timestamp default now(),
+  created_on timestamp default now(),
   is_completed boolean default false
 );
 
