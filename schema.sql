@@ -40,7 +40,8 @@ on tasks
 as PERMISSIVE
 for update
 to authenticated
-using (auth.uid() = created_by);
+using (auth.uid() = created_by)
+with check (auth.uid() = created_by);
 
 create policy "Allow users to delete their own tasks"
 on tasks
@@ -61,7 +62,8 @@ on profiles
 as PERMISSIVE
 for update
 to authenticated
-using (auth.uid() = id);
+using (auth.uid() = id)
+with check (auth.uid() = id);
 
 create policy "Users can insert their own profile"
 on profiles
