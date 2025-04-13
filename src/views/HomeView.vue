@@ -1,14 +1,32 @@
 <script setup lang="ts">
-import HelloWorld from '../components/HelloWorld.vue'
+import { onMounted, ref } from 'vue'
+import Landing from '../components/Landing.vue'
+import Alert from '../components/Alert.vue'
+const message = ref({
+  text: '',
+  type: false,
+})
+
+onMounted(() => {
+  // Handle error messages from URL
+  const urlParams = new URLSearchParams(window.location.hash.substring(1))
+  const error = urlParams.get('error')
+  const errorDescription = urlParams.get('error_description')
+
+  if (error && errorDescription) {
+    message.value.text = decodeURIComponent(errorDescription.replace(/\+/g, ' '))
+  }
+})
 </script>
 
 <template>
+  <Alert v-if="message.text" :message="message.text" :isSuccess="message.type" />
   <div>
-    <a href="https://youtu.be/dQw4w9WgXcQ" target="_blank">
+    <a href="/">
       <img src="../assets/logo.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div>
-  <HelloWorld msg="Ankaa" tagline="Bringing neighbours together - one task at a time" />
+  <Landing msg="Ankaa" tagline="Bringing neighbours together - one task at a time" />
 </template>
 
 <style scoped>
