@@ -1,7 +1,8 @@
 <script lang="ts">
 import { ref, onMounted } from 'vue'
-import Task from '@/components/Task.vue'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/lib/auth'
+import Task from '@/components/Task.vue'
 import router from '@/router'
 
 export default {
@@ -9,6 +10,7 @@ export default {
   components: { Task },
 
   setup() {
+    const { user } = useAuth()
     const tasks = ref<any[]>([])
     const loading = ref(true)
     const createTaskDialogVisible = ref(false)
@@ -38,23 +40,25 @@ export default {
           ...task,
           created_by: task.profiles?.full_name || 'Anonymous',
           created_on: new Date(task.created_on).toLocaleString(),
+          owns: task.created_by === user.value?.id,
         }))
       }
       loading.value = false
     }
 
     const fetchProfile = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user.value) return
 
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.value.id)
+        .single()
 
       if (error) {
         if (error.code === 'PGRST116') {
           const { error: insertError } = await supabase.from('profiles').insert({
-            id: user.id,
+            id: user.value.id,
             full_name: '',
             phone: '',
           })
@@ -86,15 +90,12 @@ export default {
     }
 
     const createTask = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user.value) return
 
       const { error } = await supabase.from('tasks').insert([
         {
           ...newTask.value,
-          created_by: user.id,
+          created_by: user.value.id,
         },
       ])
       if (error) console.error('Error creating task:', error)
@@ -111,12 +112,13 @@ export default {
     }
 
     const showUpdateProfileDialog = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user.value) return
 
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.value.id)
+        .single()
 
       if (error) console.error('Error fetching profile:', error)
       else {
@@ -130,10 +132,7 @@ export default {
     }
 
     const updateProfile = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user.value) return
 
       const { error } = await supabase
         .from('profiles')
@@ -141,7 +140,7 @@ export default {
           full_name: profile.value.full_name,
           phone: profile.value.phone,
         })
-        .eq('id', user.id)
+        .eq('id', user.value.id)
 
       if (error) console.error('Error updating profile:', error)
       else closeUpdateProfileDialog()
@@ -191,6 +190,7 @@ export default {
           v-for="task in tasks"
           :key="task.id"
           :task="task"
+          :owns="task.owns"
           :title="task.title"
           :description="task.description"
           :created-by="task.created_by"
@@ -264,39 +264,37 @@ export default {
 .dashboard-view {
   width: 90vw;
   height: 85vh;
-  padding: 20px;
 }
 
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  border-bottom: 1px solid #ddd;
+  padding: 0.1rem 0.1rem;
+  border-bottom: 0.1rem solid;
 }
 
 .dashboard-title {
   font-size: 3em;
-  font-weight: bold;
-  margin: 0;
+  padding: 0.5rem;
 }
 
 .tasks-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: 2rem;
 }
 
 .loading,
 .no-tasks {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 3rem;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 1em;
 }
 
 button {
@@ -311,8 +309,6 @@ button:hover {
 .primarybtn {
   background-color: green;
   color: white;
-  border: none;
-  cursor: pointer;
 }
 
 .primarybtn:hover {
@@ -322,8 +318,6 @@ button:hover {
 .warning-button {
   background-color: #dc3545;
   color: white;
-  border: none;
-  cursor: pointer;
 }
 
 .warning-button:hover {
@@ -377,6 +371,6 @@ textarea {
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 1em;
 }
 </style>
