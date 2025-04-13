@@ -36,7 +36,7 @@ export default {
       else {
         tasks.value = tasksData.map((task) => ({
           ...task,
-          created_by: task.profiles?.full_name || 'Unknown',
+          created_by: task.profiles?.full_name || 'Anonymous',
         }))
       }
       loading.value = false
