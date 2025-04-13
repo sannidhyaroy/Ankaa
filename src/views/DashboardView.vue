@@ -19,14 +19,16 @@ export default {
     const newTask = ref({
       title: '',
       description: '',
-      location_lat: null,
-      location_lng: null,
+      location_lat: null as number | null,
+      location_lng: null as number | null,
       is_completed: false,
     })
 
     const profile = ref({
       full_name: '',
       phone: '',
+      location_lat: null as number | null,
+      location_lng: null as number | null,
     })
 
     const fetchTasks = async () => {
@@ -139,11 +141,34 @@ export default {
         .update({
           full_name: profile.value.full_name,
           phone: profile.value.phone,
+          location_lat: profile.value.location_lat,
+          location_lng: profile.value.location_lng,
         })
         .eq('id', user.value.id)
 
       if (error) console.error('Error updating profile:', error)
       else closeUpdateProfileDialog()
+    }
+
+    const fetchLocation = (target: {
+      location_lat: number | null
+      location_lng: number | null
+    }) => {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser. Please enter coordinates manually.')
+        return
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          target.location_lat = position.coords.latitude
+          target.location_lng = position.coords.longitude
+        },
+        (error) => {
+          alert('Unable to fetch location. Please enter coordinates manually.')
+          console.error('Geolocation error:', error)
+        },
+      )
     }
 
     onMounted(() => {
@@ -166,6 +191,7 @@ export default {
       showUpdateProfileDialog,
       closeUpdateProfileDialog,
       updateProfile,
+      fetchLocation,
     }
   },
 }
@@ -219,6 +245,26 @@ export default {
           <div class="form-group">
             <label for="task-location-lng">Longitude</label>
             <input type="number" id="task-location-lng" v-model="newTask.location_lng" step="any" />
+            <button
+              type="button"
+              @click="fetchLocation(newTask)"
+              class="location-button"
+              aria-label="Fetch Location"
+              title="Fetch Location"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                class="bi bi-crosshair"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8.5.5a.5.5 0 0 0-1 0v.518A7 7 0 0 0 1.018 7.5H.5a.5.5 0 0 0 0 1h.518A7 7 0 0 0 7.5 14.982v.518a.5.5 0 0 0 1 0v-.518A7 7 0 0 0 14.982 8.5h.518a.5.5 0 0 0 0-1h-.518A7 7 0 0 0 8.5 1.018zm-6.48 7A6 6 0 0 1 7.5 2.02v.48a.5.5 0 0 0 1 0v-.48a6 6 0 0 1 5.48 5.48h-.48a.5.5 0 0 0 0 1h.48a6 6 0 0 1-5.48 5.48v-.48a.5.5 0 0 0-1 0v.48A6 6 0 0 1 2.02 8.5h.48a.5.5 0 0 0 0-1zM8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4"
+                />
+              </svg>
+            </button>
           </div>
           <div class="form-group">
             <label>
@@ -247,6 +293,43 @@ export default {
           <div class="form-group">
             <label for="phone">Phone</label>
             <input type="text" id="phone" v-model="profile.phone" />
+          </div>
+          <div class="form-group">
+            <label for="profile-location-lat">Latitude</label>
+            <input
+              type="number"
+              id="profile-location-lat"
+              v-model="profile.location_lat"
+              step="any"
+            />
+          </div>
+          <div class="form-group">
+            <label for="profile-location-lng">Longitude</label>
+            <input
+              type="number"
+              id="profile-location-lng"
+              v-model="profile.location_lng"
+              step="any"
+            />
+            <button
+              type="button"
+              @click="fetchLocation(profile)"
+              class="location-button"
+              title="Fetch Location"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                class="bi bi-crosshair"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8.5.5a.5.5 0 0 0-1 0v.518A7 7 0 0 0 1.018 7.5H.5a.5.5 0 0 0 0 1h.518A7 7 0 0 0 7.5 14.982v.518a.5.5 0 0 0 1 0v-.518A7 7 0 0 0 14.982 8.5h.518a.5.5 0 0 0 0-1h-.518A7 7 0 0 0 8.5 1.018zm-6.48 7A6 6 0 0 1 7.5 2.02v.48a.5.5 0 0 0 1 0v-.48a6 6 0 0 1 5.48 5.48h-.48a.5.5 0 0 0 0 1h.48a6 6 0 0 1-5.48 5.48v-.48a.5.5 0 0 0-1 0v.48A6 6 0 0 1 2.02 8.5h.48a.5.5 0 0 0 0-1zM8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4"
+                />
+              </svg>
+            </button>
           </div>
           <div class="form-actions">
             <button type="submit" class="primarybtn">Update</button>
@@ -322,6 +405,17 @@ button:hover {
 
 .warning-button:hover {
   background-color: #e64555;
+}
+
+.location-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.location-button:hover {
+  background: none;
+  color: #008cff;
 }
 
 .dialog {
