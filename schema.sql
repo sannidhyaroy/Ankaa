@@ -17,7 +17,7 @@ create table tasks (
 );
 
 -- Enable RLS
---alter table profiles enable row level security;
+alter table profiles enable row level security;
 alter table tasks enable row level security;
 
 -- Create policies
@@ -48,3 +48,31 @@ as PERMISSIVE
 for delete
 to authenticated
 using (auth.uid() = created_by);
+
+create policy "Logged-in users can read any profile"
+on profiles
+as PERMISSIVE
+for select
+to authenticated
+using (true);
+
+create policy "Users can update their own profile"
+on profiles
+as PERMISSIVE
+for update
+to authenticated
+using (auth.uid() = id);
+
+create policy "Users can insert their own profile"
+on profiles
+as PERMISSIVE
+for insert
+to authenticated
+with check (auth.uid() = id);
+
+create policy "No one can delete profiles"
+on profiles
+as RESTRICTIVE
+for delete
+to authenticated
+using (false);
