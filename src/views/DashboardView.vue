@@ -93,6 +93,7 @@ export default {
       const { error } = await supabase.from('tasks').insert([
         {
           ...newTask.value,
+          created_by: user.id,
         },
       ])
       if (error) console.error('Error creating task:', error)

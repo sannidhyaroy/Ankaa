@@ -20,7 +20,7 @@ create table tasks (
 alter table profiles enable row level security;
 alter table tasks enable row level security;
 
--- Create policies
+-- Create policies for tasks table
 create policy "Allow logged-in users to read any task"
 on tasks
 as PERMISSIVE
@@ -50,6 +50,7 @@ for delete
 to authenticated
 using (auth.uid() = created_by);
 
+-- Create policies for profiles table
 create policy "Logged-in users can read any profile"
 on profiles
 as PERMISSIVE
