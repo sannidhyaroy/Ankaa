@@ -27,7 +27,9 @@ export default {
     const profile = ref({
       full_name: '',
       phone: '',
-      location: null as string | null, // Updated to use the `location` field
+      location: null as string | null,
+      location_lat: null as number | null,
+      location_lng: null as number | null,
     })
 
     const fetchTasks = async () => {
@@ -86,7 +88,7 @@ export default {
         .sort((a, b) => {
           if (a.distance === null) return 1 // Tasks without location go to the end
           if (b.distance === null) return -1
-          return a.distance - b.distance // Sort by distance
+          return (Number(a.distance) || Infinity) - (Number(b.distance) || Infinity) // Sort by distance
         })
 
       loading.value = false
