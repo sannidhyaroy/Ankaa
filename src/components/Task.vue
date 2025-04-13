@@ -33,6 +33,7 @@ export default {
       @click="$emit('delete-task')"
       class="delete-button"
       aria-label="Delete Task"
+      title="Delete Task"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

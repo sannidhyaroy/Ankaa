@@ -3,6 +3,8 @@ create table profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text not null,
   phone text,
+  location_lat double precision,
+  location_lng double precision,
   created_on timestamp default now()
 );
 create table tasks (
