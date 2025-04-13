@@ -32,22 +32,17 @@ export default {
     })
 
     const fetchTasks = async () => {
-      if (!profile.value.location_lat || !profile.value.location_lng) {
-        console.error('User location is not set. Cannot sort tasks by distance.')
-        return
-      }
-
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
-        .select(
-          `id, title, description, created_on, created_by, profiles(full_name),
-          ST_Distance(location, ST_SetSRID(ST_MakePoint(${profile.value.location_lng}, ${profile.value.location_lat}), 4326)) AS distance`,
-        )
-        .order('distance', { ascending: true })
+        .select(`id, title, description, created_on, created_by, location, profiles(full_name)`)
 
       if (tasksError) {
         console.error('Error fetching tasks:', tasksError)
-      } else {
+        return
+      }
+
+      if (!profile.value.location_lat || !profile.value.location_lng) {
+        console.warn('Profile location is not set. Showing unsorted tasks.')
         tasks.value = tasksData.map((task: any) => ({
           id: task.id,
           title: task.title,
@@ -55,9 +50,48 @@ export default {
           created_on: new Date(task.created_on).toLocaleString(),
           created_by: task.profiles?.full_name || 'Anonymous',
           owns: task.created_by === user.value?.id,
-          distance: task.distance,
+          distance: null, // No distance calculated
         }))
+        loading.value = false
+        return
       }
+
+      const userLocation = `ST_SetSRID(ST_MakePoint(${profile.value.location_lng}, ${profile.value.location_lat}), 4326)`
+
+      tasks.value = tasksData
+        .map((task: any) => {
+          if (task.location) {
+            const distance = supabase.rpc('calculate_distance', {
+              location1: userLocation,
+              location2: task.location,
+            })
+            return {
+              id: task.id,
+              title: task.title,
+              description: task.description,
+              created_on: new Date(task.created_on).toLocaleString(),
+              created_by: task.profiles?.full_name || 'Anonymous',
+              owns: task.created_by === user.value?.id,
+              distance,
+            }
+          } else {
+            return {
+              id: task.id,
+              title: task.title,
+              description: task.description,
+              created_on: new Date(task.created_on).toLocaleString(),
+              created_by: task.profiles?.full_name || 'Anonymous',
+              owns: task.created_by === user.value?.id,
+              distance: null, // No distance calculated
+            }
+          }
+        })
+        .sort((a, b) => {
+          if (a.distance === null) return 1 // Tasks without location go to the end
+          if (b.distance === null) return -1
+          return a.distance - b.distance // Sort by distance
+        })
+
       loading.value = false
     }
 
