@@ -32,17 +32,30 @@ export default {
     })
 
     const fetchTasks = async () => {
+      if (!profile.value.location_lat || !profile.value.location_lng) {
+        console.error('User location is not set. Cannot sort tasks by distance.')
+        return
+      }
+
       const { data: tasksData, error: tasksError } = await supabase
         .from('tasks')
-        .select('*, profiles(full_name)')
+        .select(
+          `id, title, description, created_on, created_by, profiles(full_name),
+          ST_Distance(location, ST_SetSRID(ST_MakePoint(${profile.value.location_lng}, ${profile.value.location_lat}), 4326)) AS distance`,
+        )
+        .order('distance', { ascending: true })
 
-      if (tasksError) console.error('Error fetching tasks:', tasksError)
-      else {
-        tasks.value = tasksData.map((task) => ({
-          ...task,
-          created_by: task.profiles?.full_name || 'Anonymous',
+      if (tasksError) {
+        console.error('Error fetching tasks:', tasksError)
+      } else {
+        tasks.value = tasksData.map((task: any) => ({
+          id: task.id,
+          title: task.title,
+          description: task.description,
           created_on: new Date(task.created_on).toLocaleString(),
+          created_by: task.profiles?.full_name || 'Anonymous',
           owns: task.created_by === user.value?.id,
+          distance: task.distance,
         }))
       }
       loading.value = false

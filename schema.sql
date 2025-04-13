@@ -81,3 +81,8 @@ as RESTRICTIVE
 for delete
 to authenticated
 using (false);
+
+-- Add PostGIS extension
+CREATE EXTENSION IF NOT EXISTS postgis;
+ALTER TABLE tasks ADD COLUMN location geography(Point, 4326);
+ALTER TABLE profiles ADD COLUMN location geography(Point, 4326);
