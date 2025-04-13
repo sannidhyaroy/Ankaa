@@ -10,8 +10,6 @@ create table tasks (
   title text not null,
   description text,
   created_by uuid references profiles(id) on delete set null,
-  location_lat double precision,
-  location_lng double precision,
   created_on timestamp default now(),
   is_completed boolean default false
 );
@@ -79,3 +77,8 @@ as RESTRICTIVE
 for delete
 to authenticated
 using (false);
+
+-- Add PostGIS extension
+CREATE EXTENSION IF NOT EXISTS postgis;
+ALTER TABLE tasks ADD COLUMN location geography(Point, 4326);
+ALTER TABLE profiles ADD COLUMN location geography(Point, 4326);
