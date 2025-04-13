@@ -27,8 +27,7 @@ export default {
     const profile = ref({
       full_name: '',
       phone: '',
-      location_lat: null as number | null,
-      location_lng: null as number | null,
+      location: null as string | null, // Updated to use the `location` field
     })
 
     const fetchTasks = async () => {
@@ -41,7 +40,7 @@ export default {
         return
       }
 
-      if (!profile.value.location_lat || !profile.value.location_lng) {
+      if (!profile.value.location) {
         console.warn('Profile location is not set. Showing unsorted tasks.')
         tasks.value = tasksData.map((task: any) => ({
           id: task.id,
@@ -56,13 +55,11 @@ export default {
         return
       }
 
-      const userLocation = `ST_SetSRID(ST_MakePoint(${profile.value.location_lng}, ${profile.value.location_lat}), 4326)`
-
       tasks.value = tasksData
         .map((task: any) => {
           if (task.location) {
             const distance = supabase.rpc('calculate_distance', {
-              location1: userLocation,
+              location1: profile.value.location,
               location2: task.location,
             })
             return {
@@ -141,14 +138,22 @@ export default {
     const createTask = async () => {
       if (!user.value) return
 
+      const { location_lat, location_lng, ...taskData } = newTask.value
+
+      const location =
+        location_lat && location_lng ? `SRID=4326;POINT(${location_lng} ${location_lat})` : null
+
       const { error } = await supabase.from('tasks').insert([
         {
-          ...newTask.value,
+          ...taskData,
+          location,
           created_by: user.value.id,
         },
       ])
-      if (error) console.error('Error creating task:', error)
-      else {
+
+      if (error) {
+        console.error('Error creating task:', error)
+      } else {
         fetchTasks()
         closeCreateTaskDialog()
       }
@@ -183,18 +188,24 @@ export default {
     const updateProfile = async () => {
       if (!user.value) return
 
+      const { location_lat, location_lng, ...profileData } = profile.value
+
+      const location =
+        location_lat && location_lng ? `SRID=4326;POINT(${location_lng} ${location_lat})` : null
+
       const { error } = await supabase
         .from('profiles')
         .update({
-          full_name: profile.value.full_name,
-          phone: profile.value.phone,
-          location_lat: profile.value.location_lat,
-          location_lng: profile.value.location_lng,
+          ...profileData,
+          location,
         })
         .eq('id', user.value.id)
 
-      if (error) console.error('Error updating profile:', error)
-      else closeUpdateProfileDialog()
+      if (error) {
+        console.error('Error updating profile:', error)
+      } else {
+        closeUpdateProfileDialog()
+      }
     }
 
     const fetchLocation = (target: {
