@@ -7,7 +7,6 @@ defineProps<{
   tagline: string
 }>()
 
-const count = ref(0)
 const router = useRouter()
 const join = () => {
   router.push('/join')

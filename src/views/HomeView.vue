@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import HelloWorld from '../components/HelloWorld.vue'
+import Landing from '../components/Landing.vue'
 import Alert from '../components/Alert.vue'
 const message = ref({
   text: '',
@@ -22,11 +22,11 @@ onMounted(() => {
 <template>
   <Alert v-if="message.text" :message="message.text" :isSuccess="message.type" />
   <div>
-    <a href="https://youtu.be/dQw4w9WgXcQ" target="_blank">
+    <a href="/">
       <img src="../assets/logo.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div>
-  <HelloWorld msg="Ankaa" tagline="Bringing neighbours together - one task at a time" />
+  <Landing msg="Ankaa" tagline="Bringing neighbours together - one task at a time" />
 </template>
 
 <style scoped>
