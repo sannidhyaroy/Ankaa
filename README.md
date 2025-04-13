@@ -61,7 +61,30 @@ Ensure you have the following installed:
     ```bash
     chmod 600 .env
     ```
-6.  To preview, you can run the application in dev mode:
+6.  Create PostgreSQL Tables:
+
+    Run the following SQL Script in the Supabase SQL Editor of your Project:
+
+    ```sql
+    create table profiles (
+    id uuid primary key references auth.users(id) on delete cascade,
+    full_name text not null,
+    phone text,
+    created_at timestamp default now()
+    );
+    create table tasks (
+      id uuid primary key default gen_random_uuid(),
+      title text not null,
+      description text,
+      created_by uuid references profiles(id) on delete set null,
+      location_lat double precision,
+      location_lng double precision,
+      created_at timestamp default now(),
+      is_completed boolean default false
+    );
+    ```
+
+7.  To preview, you can run the application in dev mode:
     ```bash
     npm run dev
     ```
