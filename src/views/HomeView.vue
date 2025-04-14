@@ -23,7 +23,7 @@ onMounted(() => {
   <Alert v-if="message.text" :message="message.text" :isSuccess="message.type" />
   <div>
     <a href="/">
-      <img src="../assets/logo.png" class="logo vue" alt="Vue logo" />
+      <img src="../assets/logo.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div>
   <Landing msg="Ankaa" tagline="Bringing neighbours together - one task at a time" />
