@@ -3,9 +3,10 @@ create or replace function public.handle_new_user () returns trigger
 set
   search_path = '' as $$
 begin
-  insert into public.profiles (id, full_name, username, email, avatar_url)
+  insert into public.profiles (id, username, email)
   values (
     new.id,
+    new.id, -- username defaults to the user's id
     new.email,
   );
   return new;

@@ -2,7 +2,7 @@
 create table profiles (
   id uuid references auth.users (id) on delete cascade not null primary key,
   full_name text,
-  username text unique,
+  username text unique not null,
   avatar_url text, -- Support is unlikely, just for future-proofing
   phone text unique,
   email text references auth.users (email) on delete cascade,
