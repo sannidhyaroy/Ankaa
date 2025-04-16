@@ -113,9 +113,9 @@ set
 begin
   update profiles
   set 
-    full_name = full_name,
-    username = username,
-    phone = phone,
+    full_name = update_profile.full_name,
+    username = update_profile.username,
+    phone = update_profile.phone,
     location = case 
       when location_lat is not null and location_lng is not null 
       then ST_SetSRID(ST_MakePoint(location_lng, location_lat), 4326)
