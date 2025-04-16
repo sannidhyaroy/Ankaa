@@ -7,7 +7,7 @@ begin
   values (
     new.id,
     new.id, -- username defaults to the user's id
-    new.email,
+    new.email
   );
   return new;
 end;
