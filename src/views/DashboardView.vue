@@ -437,7 +437,7 @@ button:hover {
 
 .location-button:hover {
   background: none;
-  color: #008cff;
+  color: #42b883;
 }
 
 .dialog {

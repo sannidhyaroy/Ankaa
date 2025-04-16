@@ -58,9 +58,9 @@ export default {
     <h2>{{ title }}</h2>
     <p>{{ description }}</p>
     <div class="meta">
-      <strong v-if="!isNaN(parseFloat(distance))">
+      <code class="distance" v-if="!isNaN(parseFloat(distance))">
         {{ parseFloat(distance).toFixed(2) }} km away
-      </strong>
+      </code>
       <p><strong>Created By:</strong> {{ createdBy }}</p>
       <p><strong>Created On:</strong> {{ createdOn }}</p>
     </div>
@@ -88,5 +88,8 @@ export default {
   margin: 4px 0;
   font-size: 0.9em;
   color: #555;
+}
+.task .meta .distance {
+  color: #42b883;
 }
 </style>
