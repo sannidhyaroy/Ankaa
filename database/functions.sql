@@ -12,6 +12,44 @@ begin
 end;
 $$ language plpgsql security definer;
 
+-- Create a new task
+create or replace function create_task(
+  title text,
+  description text,
+  status text default 'todo',
+  due_date timestamp default null,
+  location_lat double precision,
+  location_lng double precision
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into tasks (
+    title,
+    description,
+    status,
+    due_date,
+    location,
+    created_by
+  )
+  values (
+    title,
+    description,
+    status,
+    due_date,
+    case 
+      when location_lat is not null and location_lng is not null 
+      then ST_SetSRID(ST_MakePoint(location_lng, location_lat), 4326)
+      else null 
+    end,
+    auth.uid()
+  );
+end;
+$$;
+
 -- Get tasks sorted by distance
 create or replace function get_sorted_tasks_by_location (
   max_distance_km double precision default null,
