@@ -50,6 +50,34 @@ begin
 end;
 $$;
 
+-- Update profile
+create or replace function update_profile(
+  full_name text,
+  username text,
+  phone text,
+  location_lat double precision,
+  location_lng double precision
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update profiles
+  set 
+    full_name = full_name,
+    username = username,
+    phone = phone,
+    location = case 
+      when location_lat is not null and location_lng is not null 
+      then ST_SetSRID(ST_MakePoint(location_lng, location_lat), 4326)
+      else null 
+    end
+  where id = auth.uid();
+end;
+$$;
+
 -- Get tasks sorted by distance
 create or replace function get_sorted_tasks_by_location (
   max_distance_km double precision default null,
