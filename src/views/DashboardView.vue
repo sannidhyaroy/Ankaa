@@ -33,63 +33,24 @@ export default {
     })
 
     const fetchTasks = async () => {
-      const { data: tasksData, error: tasksError } = await supabase
-        .from('tasks')
-        .select(`id, title, description, created_on, created_by, location, profiles(full_name)`)
+      const { data: tasksData, error: tasksError } = await supabase.rpc(
+        'get_sorted_tasks_by_location',
+      )
 
       if (tasksError) {
         console.error('Error fetching tasks:', tasksError)
         return
       }
 
-      if (!profile.value.location) {
-        console.warn('Profile location is not set. Showing unsorted tasks.')
-        tasks.value = tasksData.map((task: any) => ({
-          id: task.id,
-          title: task.title,
-          description: task.description,
-          created_on: new Date(task.created_on).toLocaleString(),
-          created_by: task.profiles?.full_name || 'Anonymous',
-          owns: task.created_by === user.value?.id,
-          distance: null, // No distance calculated
-        }))
-        loading.value = false
-        return
-      }
-
-      tasks.value = tasksData
-        .map((task: any) => {
-          if (task.location) {
-            const distance = supabase.rpc('calculate_distance', {
-              location1: profile.value.location,
-              location2: task.location,
-            })
-            return {
-              id: task.id,
-              title: task.title,
-              description: task.description,
-              created_on: new Date(task.created_on).toLocaleString(),
-              created_by: task.profiles?.full_name || 'Anonymous',
-              owns: task.created_by === user.value?.id,
-              distance,
-            }
-          } else {
-            return {
-              id: task.id,
-              title: task.title,
-              description: task.description,
-              created_on: new Date(task.created_on).toLocaleString(),
-              created_by: task.profiles?.full_name || 'Anonymous',
-              owns: task.created_by === user.value?.id,
-              distance: null, // No distance calculated
-            }
-          }
-        })
-        .sort((a, b) => {
-          if (a.distance === null) return 1 // Tasks without location go to the end
-          if (b.distance === null) return -1
-          return (Number(a.distance) || Infinity) - (Number(b.distance) || Infinity) // Sort by distance
-        })
+      tasks.value = tasksData.map((task: any) => ({
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        created_on: new Date(task.created_on).toLocaleString(),
+        created_by: task.created_by || 'Anonymous',
+        owns: task.created_by === user.value?.id,
+        distance: task.distance_km,
+      }))
 
       loading.value = false
     }
