@@ -62,6 +62,43 @@ begin
 end;
 $$;
 
+-- Get Profile
+create or replace function get_profile(profile_id uuid default null)
+returns table (
+  id uuid,
+  full_name text,
+  username text,
+  phone text,
+  email text,
+  location geometry,
+  created_on timestamp,
+  distance_km double precision
+)
+language sql
+security definer
+set search_path = public
+as $$
+  with caller as (
+    select id, location from profiles where id = auth.uid()
+  )
+  select 
+    p.id,
+    p.full_name,
+    p.username,
+    p.phone,
+    p.email,
+    p.location,
+    p.created_on,
+    case 
+      when p.location is not null and c.location is not null then
+        accurate_distance_km(p.location, c.location)
+      else null
+    end as distance_km
+  from profiles p
+  left join caller c on true
+  where p.id = coalesce(profile_id, auth.uid());
+$$;
+
 -- Update profile
 create or replace function update_profile (
   full_name text,
