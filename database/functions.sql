@@ -13,18 +13,16 @@ begin
 end;
 $$ language plpgsql security definer;
 
+-- Return Geography point
+create or replace function make_geography_point (lat double precision, lng double precision) returns geography as $$
+  select ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography;
+$$ language sql immutable;
+
 -- Get distance between two points
-create or replace function public.accurate_distance_km(
-  point1 geometry,
-  point2 geometry
-) returns double precision
-language sql
-immutable
-as $$
-  select ST_DistanceSpheroid(
+create or replace function public.accurate_distance_km (point1 geography, point2 geography) returns double precision language sql immutable as $$
+  select ST_Distance(
     point1,
-    point2,
-    'SPHEROID["WGS 84", 6378137, 298.257223563]'
+    point2
   ) / 1000;
 $$;
 
@@ -55,7 +53,7 @@ begin
     due_date,
     case 
       when location_lat is not null and location_lng is not null 
-      then ST_SetSRID(ST_MakePoint(location_lng, location_lat), 4326)
+      then make_geography_point(location_lat, location_lng)
       else null 
     end,
     auth.uid()
@@ -64,21 +62,18 @@ end;
 $$;
 
 -- Get Profile
-create or replace function get_profile(profile_id uuid default null)
-returns table (
+create or replace function get_profile (profile_id uuid default null) returns table (
   id uuid,
   full_name text,
   username text,
   phone text,
   email text,
-  location geometry,
+  location geography (Point, 4326),
   created_on timestamp,
   distance_km double precision
-)
-language sql
-security definer
-set search_path = public
-as $$
+) language sql security definer
+set
+  search_path = public as $$
   with caller as (
     select id, location from profiles where id = auth.uid()
   )
@@ -118,7 +113,7 @@ begin
     phone = update_profile.phone,
     location = case 
       when location_lat is not null and location_lng is not null 
-      then ST_SetSRID(ST_MakePoint(location_lng, location_lat), 4326)
+      then make_geography_point(location_lat, location_lng)
       else null 
     end
   where id = auth.uid();
@@ -135,7 +130,7 @@ create or replace function get_sorted_tasks_by_location (
   description text,
   status text,
   due_date timestamp,
-  location geography,
+  location geography (Point, 4326),
   assignee uuid,
   created_by uuid,
   created_on timestamp,
@@ -153,7 +148,7 @@ begin
     t.assignee,
     t.created_by,
     t.created_on,
-    st_distance(t.location, p.location) / 1000 as distance_km
+    accurate_distance_km(t.location, p.location) as distance_km
   from
     (select * from profiles where profiles.id = auth.uid()) p,
     lateral (
@@ -172,12 +167,12 @@ begin
         )
         and (
           max_distance_km is null or
-          st_distance(tasks.location, p.location) <= max_distance_km * 1000
+          accurate_distance_km(tasks.location, p.location) <= max_distance_km
         )
     ) t
   order by
-    (st_distance(t.location, p.location) is null),
-    st_distance(t.location, p.location),
+    (t.location is null),
+    accurate_distance_km(t.location, p.location),
     t.created_on desc;
 end;
 $$ language plpgsql security definer;
