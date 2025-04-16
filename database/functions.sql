@@ -13,19 +13,16 @@ end;
 $$ language plpgsql security definer;
 
 -- Create a new task
-create or replace function create_task(
+create or replace function create_task (
   title text,
-  description text,
+  description text default null,
   status text default 'todo',
   due_date timestamp default null,
-  location_lat double precision,
-  location_lng double precision
-)
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
+  location_lat double precision default null,
+  location_lng double precision default null
+) returns void language plpgsql security definer
+set
+  search_path = public as $$
 begin
   insert into tasks (
     title,
@@ -51,18 +48,15 @@ end;
 $$;
 
 -- Update profile
-create or replace function update_profile(
+create or replace function update_profile (
   full_name text,
   username text,
   phone text,
   location_lat double precision,
   location_lng double precision
-)
-returns void
-language plpgsql
-security definer
-set search_path = public
-as $$
+) returns void language plpgsql security definer
+set
+  search_path = public as $$
 begin
   update profiles
   set 
