@@ -12,6 +12,21 @@ begin
 end;
 $$ language plpgsql security definer;
 
+-- Get distance between two points
+create or replace function public.accurate_distance_km(
+  point1 geometry,
+  point2 geometry
+) returns double precision
+language sql
+immutable
+as $$
+  select ST_DistanceSpheroid(
+    point1,
+    point2,
+    'SPHEROID["WGS 84", 6378137, 298.257223563]'
+  ) / 1000;
+$$;
+
 -- Create a new task
 create or replace function create_task (
   title text,
