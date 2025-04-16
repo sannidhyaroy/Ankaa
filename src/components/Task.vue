@@ -14,6 +14,10 @@ export default {
       type: String,
       required: true,
     },
+    distance: {
+      type: String,
+      required: true,
+    },
     createdBy: {
       type: String,
       required: true,
@@ -54,6 +58,9 @@ export default {
     <h2>{{ title }}</h2>
     <p>{{ description }}</p>
     <div class="meta">
+      <strong v-if="!isNaN(parseFloat(distance))">
+        {{ parseFloat(distance).toFixed(2) }} km away
+      </strong>
       <p><strong>Created By:</strong> {{ createdBy }}</p>
       <p><strong>Created On:</strong> {{ createdOn }}</p>
     </div>

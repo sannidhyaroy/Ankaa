@@ -240,6 +240,7 @@ export default {
           :owns="task.owns"
           :title="task.title"
           :description="task.description"
+          :distance="task.distance"
           :created-by="task.created_by"
           :created-on="task.created_on"
           @delete-task="deleteTask(task.id)"
