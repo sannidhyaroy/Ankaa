@@ -134,6 +134,7 @@ create or replace function get_sorted_tasks_by_location (
   assignee uuid,
   created_by text,
   created_on timestamp,
+  self_created boolean,
   distance_km double precision
 ) as $$
 begin
@@ -148,6 +149,7 @@ begin
     t.assignee,
     taskcreator.full_name as created_by,
     t.created_on,
+    t.created_by = auth.uid() as self_created,
     accurate_distance_km(t.location, p.location) as distance_km
   from
     (select * from profiles where profiles.id = auth.uid()) p,

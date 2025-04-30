@@ -48,7 +48,7 @@ export default {
         description: task.description,
         created_on: new Date(task.created_on).toLocaleString(),
         created_by: task.created_by || 'Anonymous',
-        owns: task.created_by === user.value?.id,
+        owns: task.self_created,
         distance: task.distance_km,
       }))
 
