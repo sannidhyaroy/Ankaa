@@ -132,7 +132,7 @@ create or replace function get_sorted_tasks_by_location (
   due_date timestamp,
   location geography (Point, 4326),
   assignee uuid,
-  created_by uuid,
+  created_by text,
   created_on timestamp,
   distance_km double precision
 ) as $$
@@ -146,7 +146,7 @@ begin
     t.due_date,
     t.location,
     t.assignee,
-    t.created_by,
+    taskcreator.full_name as created_by,
     t.created_on,
     accurate_distance_km(t.location, p.location) as distance_km
   from
@@ -170,6 +170,7 @@ begin
           accurate_distance_km(tasks.location, p.location) <= max_distance_km
         )
     ) t
+    left join profiles taskcreator on taskcreator.id = t.created_by
   order by
     (t.location is null),
     accurate_distance_km(t.location, p.location),
