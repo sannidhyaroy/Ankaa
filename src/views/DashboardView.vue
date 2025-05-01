@@ -48,7 +48,8 @@ export default {
           'Geolocation is not supported by your browser. Please enter coordinates manually.'
       },
       locationNotAvailable: (error: GeolocationPositionError) => {
-        alert.value.message = 'Unable to fetch location. Please enter coordinates manually.'
+        alert.value.title = 'Unable to fetch location. Please enter coordinates manually.'
+        alert.value.message = error.message
         console.error('Geolocation error:', error)
       },
     }
@@ -228,9 +229,15 @@ export default {
         (position) => {
           target.location_lat = position.coords.latitude
           target.location_lng = position.coords.longitude
+          console.log('Accuracy: ' + position.coords.accuracy + ' meters')
         },
         (error) => {
           alerts.locationNotAvailable(error)
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: 15000,
         },
       )
     }
