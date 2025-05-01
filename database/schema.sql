@@ -5,7 +5,7 @@ create table profiles (
   username text unique not null,
   avatar_url text, -- Support is unlikely, just for future-proofing
   phone text unique,
-  email text references auth.users (email) on delete cascade,
+  email text,
   location geography (Point, 4326),
   created_on timestamp default now(),
   constraint username_length check (char_length(username) >= 3)

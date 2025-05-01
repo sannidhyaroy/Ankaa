@@ -13,6 +13,17 @@ begin
 end;
 $$ language plpgsql security definer;
 
+-- Handle email updates
+create or replace function public.handle_update_email () returns trigger
+set
+  search_path = public as $$
+begin
+  update public.profiles set email = new.email
+  where id = new.id;
+  return new;
+end;
+$$ language plpgsql security definer;
+
 -- Return Geography point
 create or replace function make_geography_point (lat double precision, lng double precision) returns geography as $$
   select ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography;
