@@ -2,6 +2,7 @@
 import { defineProps } from 'vue'
 
 defineProps({
+  title: String,
   message: String,
   isSuccess: Boolean,
 })
@@ -9,29 +10,34 @@ defineProps({
 
 <template>
   <div
-    v-if="message"
-    class="message-container"
-    :class="isSuccess ? 'success-message' : 'failure-message'"
+    v-if="title || message"
+    class="alert-container"
+    :class="isSuccess ? 'green-alert' : 'red-alert'"
   >
-    <p class="message-text">{{ message }}</p>
+    <h3 v-if="title" class="alert-title">{{ title }}</h3>
+    <p v-if="message" class="alert-message">{{ message }}</p>
   </div>
 </template>
 
 <style scoped>
-.message-container {
+.alert-container {
   max-width: 80vw;
   margin: 0.5em auto;
   padding: 0.3em;
   border-radius: 1em;
   background-color: rgba(255, 255, 255, 0.2);
 }
-.success-message {
+.green-alert {
   background-color: rgba(0, 128, 0, 0.2);
 }
-.failure-message {
+.red-alert {
   background-color: rgba(255, 181, 181, 0.2);
 }
-.message-text {
+.alert-title {
+  text-align: center;
+  font-size: 1.25em;
+}
+.alert-message {
   text-align: center;
   margin: 1em 0;
 }

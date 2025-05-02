@@ -14,6 +14,10 @@ export default {
       type: String,
       required: true,
     },
+    distance: {
+      type: String,
+      required: true,
+    },
     createdBy: {
       type: String,
       required: true,
@@ -54,6 +58,9 @@ export default {
     <h2>{{ title }}</h2>
     <p>{{ description }}</p>
     <div class="meta">
+      <code class="distance" v-if="!isNaN(parseFloat(distance))">
+        {{ parseFloat(distance).toFixed(2) }} km away
+      </code>
       <p><strong>Created By:</strong> {{ createdBy }}</p>
       <p><strong>Created On:</strong> {{ createdOn }}</p>
     </div>
@@ -81,5 +88,8 @@ export default {
   margin: 4px 0;
   font-size: 0.9em;
   color: #555;
+}
+.task .meta .distance {
+  color: #42b883;
 }
 </style>

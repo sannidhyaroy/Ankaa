@@ -9,6 +9,17 @@ Bringing neighbours together - one task at a time.
 
 ---
 
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Tech Stack](#tech-stack)
+3. [Getting Started](#getting-started)
+   - [Prerequisites](#prerequisites)
+   - [Installation](#installation)
+4. [License](#license)
+
+---
+
 ## Overview
 
 Ankaa is a Vue based web application designed to foster community engagement by letting neighbors discover, connect and enabling them to collaborate on tasks. Users can post tasks they need help with, and can view tasks posted by others (sorted by closest distance). They can reach out to the relevant person, if they want to collaborate on a task.
@@ -17,7 +28,7 @@ Ankaa is a Vue based web application designed to foster community engagement by 
 
 ---
 
-### Tech Stack
+## Tech Stack
 
 - [Vue 3](https://vuejs.org)
 - [Vite](https://vite.dev)
@@ -55,28 +66,26 @@ Ensure you have the following installed:
 4.  Note your API details:
     - Select your Supabase Project from the [Supabase Dashboard](https://supabase.com/dashboard/projects).
     - Navigate to `Project Settings` from the left toolbar menu.
-    - Nagivate to the `Data API` page under `Configuration` from the left sidebar..
+    - Navigate to the `Data API` page under `Configuration` from the left sidebar.
     - Note the Project URL, it's the RESTful endpoint for querying and managing your database. You'll need this later.
       Under Project API Keys, note your anon key, you'll need this key to connect to your database later.
 5.  Setup Environment Variables:
-    ```bash/
+    ```bash
     cp -v .env.example .env
     ```
     - Paste the Project URL from the above step into `VITE_SUPABASE_URL`.
     - Paste your anon key from the above step into `VITE_SUPABASE_ANON_KEY`.
     - It's recommended to lockdown file permissions of your environment file, as it contains confidential information like api keys. On a bash shell, you can use the following command:
-    ```bash
-    chmod 600 .env
-    ```
+      ```bash
+      chmod 600 .env
+      ```
 6.  Setup PostgreSQL:
-    - Select your Supabase Project from the [Supabase Dashboard](https://supabase.com/dashboard/projects).
-    - Navigate to `SQL Editor` from the left toolbar menu.
-    - Paste the contents of `schema.sql` from this repository into the SQL Editor.
-    - Click `Run`.
-7.  To preview, you can run the application in dev mode:
-    ```bash
-    npm run dev
-    ```
+    - For detailed instructions on setting up the database, refer to the [Database README](./database/README.md).
+7.  Test it out:
+    - To preview, you can run the application in dev mode:
+      ```bash
+      npm run dev
+      ```
 
 ---
 

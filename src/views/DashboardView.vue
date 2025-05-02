@@ -2,12 +2,14 @@
 import { ref, onMounted } from 'vue'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth'
+import Alert from '@/components/Alert.vue'
 import Task from '@/components/Task.vue'
 import router from '@/router'
+import type { AuthError, PostgrestError } from '@supabase/supabase-js'
 
 export default {
   name: 'DashboardView',
-  components: { Task },
+  components: { Alert, Task },
 
   setup() {
     const { user } = useAuth()
@@ -15,6 +17,42 @@ export default {
     const loading = ref(true)
     const createTaskDialogVisible = ref(false)
     const updateProfileDialogVisible = ref(false)
+
+    const alert = ref({
+      title: '',
+      message: '',
+      isSuccess: false,
+    })
+
+    const alerts = {
+      AuthError: (title: string, error: AuthError) => {
+        alert.value.title = title
+        alert.value.message = error.message
+      },
+      PostgrestError: (title: string, error: PostgrestError) => {
+        alert.value.title = title
+        alert.value.message = error.message
+      },
+      profileIncomplete: () => {
+        alert.value.title = 'Profile details are incomplete.'
+        alert.value.message =
+          'People might not be able to identify you or reach out to you, as your profile details are incomplete.'
+      },
+      profileLocationIncomplete: () => {
+        alert.value.title = 'Location-based task sorting is disabled!'
+        alert.value.message =
+          'Your profile details are incomplete. Location-based sorting of tasks rely on profile location and are disabled currently.'
+      },
+      geolocationNotSupported: () => {
+        alert.value.message =
+          'Geolocation is not supported by your browser. Please enter coordinates manually.'
+      },
+      locationNotAvailable: (error: GeolocationPositionError) => {
+        alert.value.title = 'Unable to fetch location. Please enter coordinates manually.'
+        alert.value.message = error.message
+        console.error('Geolocation error:', error)
+      },
+    }
 
     const newTask = ref({
       title: '',
@@ -33,63 +71,24 @@ export default {
     })
 
     const fetchTasks = async () => {
-      const { data: tasksData, error: tasksError } = await supabase
-        .from('tasks')
-        .select(`id, title, description, created_on, created_by, location, profiles(full_name)`)
+      const { data: tasksData, error: tasksError } = await supabase.rpc(
+        'get_sorted_tasks_by_location',
+      )
 
       if (tasksError) {
-        console.error('Error fetching tasks:', tasksError)
+        alerts.PostgrestError("Something's wrong! Error fetching tasks", tasksError)
         return
       }
 
-      if (!profile.value.location) {
-        console.warn('Profile location is not set. Showing unsorted tasks.')
-        tasks.value = tasksData.map((task: any) => ({
-          id: task.id,
-          title: task.title,
-          description: task.description,
-          created_on: new Date(task.created_on).toLocaleString(),
-          created_by: task.profiles?.full_name || 'Anonymous',
-          owns: task.created_by === user.value?.id,
-          distance: null, // No distance calculated
-        }))
-        loading.value = false
-        return
-      }
-
-      tasks.value = tasksData
-        .map((task: any) => {
-          if (task.location) {
-            const distance = supabase.rpc('calculate_distance', {
-              location1: profile.value.location,
-              location2: task.location,
-            })
-            return {
-              id: task.id,
-              title: task.title,
-              description: task.description,
-              created_on: new Date(task.created_on).toLocaleString(),
-              created_by: task.profiles?.full_name || 'Anonymous',
-              owns: task.created_by === user.value?.id,
-              distance,
-            }
-          } else {
-            return {
-              id: task.id,
-              title: task.title,
-              description: task.description,
-              created_on: new Date(task.created_on).toLocaleString(),
-              created_by: task.profiles?.full_name || 'Anonymous',
-              owns: task.created_by === user.value?.id,
-              distance: null, // No distance calculated
-            }
-          }
-        })
-        .sort((a, b) => {
-          if (a.distance === null) return 1 // Tasks without location go to the end
-          if (b.distance === null) return -1
-          return (Number(a.distance) || Infinity) - (Number(b.distance) || Infinity) // Sort by distance
-        })
+      tasks.value = tasksData.map((task: any) => ({
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        created_on: new Date(task.created_on).toLocaleString(),
+        created_by: task.created_by || 'Anonymous',
+        owns: task.self_created,
+        distance: task.distance_km,
+      }))
 
       loading.value = false
     }
@@ -112,14 +111,22 @@ export default {
           })
           if (insertError) console.error('Error inserting profile:', insertError)
           else console.log('Profile created')
-        } else console.error('Error fetching profile:', error)
-      } else profile.value = data
+        } else alerts.PostgrestError("Something's wrong! Error fetching profile", error)
+      } else {
+        profile.value = data
+        if (profile.value.location === null) {
+          alerts.profileLocationIncomplete()
+        } else if (profile.value.full_name === '' || profile.value.phone === '') {
+          alerts.profileIncomplete()
+        }
+      }
     }
 
     const logout = async () => {
       const { error } = await supabase.auth.signOut()
-      if (error) console.error('Error logging out:', error)
-      else router.push('/join')
+      if (error) {
+        alerts.AuthError("Oops! We couldn't log you out!", error)
+      } else router.push('/join')
     }
 
     const showCreateTaskDialog = () => {
@@ -154,7 +161,7 @@ export default {
       ])
 
       if (error) {
-        console.error('Error creating task:', error)
+        alerts.PostgrestError("Something's wrong! Error creating task", error)
       } else {
         fetchTasks()
         closeCreateTaskDialog()
@@ -163,7 +170,7 @@ export default {
 
     const deleteTask = async (taskId: number) => {
       const { error } = await supabase.from('tasks').delete().eq('id', taskId)
-      if (error) console.error('Error deleting task:', error)
+      if (error) alerts.PostgrestError("Something's wrong! Error deleting task", error)
       else fetchTasks()
     }
 
@@ -176,7 +183,7 @@ export default {
         .eq('id', user.value.id)
         .single()
 
-      if (error) console.error('Error fetching profile:', error)
+      if (error) alerts.PostgrestError("Something's wrong! Error fetching profile", error)
       else {
         profile.value = data
         updateProfileDialogVisible.value = true
@@ -203,9 +210,8 @@ export default {
         })
         .eq('id', user.value.id)
 
-      if (error) {
-        console.error('Error updating profile:', error)
-      } else {
+      if (error) alerts.PostgrestError("Something's wrong! Error updating profile", error)
+      else {
         closeUpdateProfileDialog()
       }
     }
@@ -215,7 +221,7 @@ export default {
       location_lng: number | null
     }) => {
       if (!navigator.geolocation) {
-        alert('Geolocation is not supported by your browser. Please enter coordinates manually.')
+        alerts.geolocationNotSupported()
         return
       }
 
@@ -223,10 +229,15 @@ export default {
         (position) => {
           target.location_lat = position.coords.latitude
           target.location_lng = position.coords.longitude
+          console.log('Accuracy: ' + position.coords.accuracy + ' meters')
         },
         (error) => {
-          alert('Unable to fetch location. Please enter coordinates manually.')
-          console.error('Geolocation error:', error)
+          alerts.locationNotAvailable(error)
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: 15000,
         },
       )
     }
@@ -237,6 +248,7 @@ export default {
     })
 
     return {
+      alert,
       tasks,
       loading,
       createTaskDialogVisible,
@@ -267,6 +279,12 @@ export default {
         <button @click="logout" class="warning-button">Log Out</button>
       </div>
     </header>
+    <Alert
+      v-if="alert.title || alert.message"
+      :title="alert.title"
+      :message="alert.message"
+      :isSuccess="alert.isSuccess"
+    />
     <main>
       <h2>Your Tasks</h2>
       <div v-if="loading" class="loading">Loading tasks...</div>
@@ -279,6 +297,7 @@ export default {
           :owns="task.owns"
           :title="task.title"
           :description="task.description"
+          :distance="task.distance"
           :created-by="task.created_by"
           :created-on="task.created_on"
           @delete-task="deleteTask(task.id)"
@@ -475,7 +494,7 @@ button:hover {
 
 .location-button:hover {
   background: none;
-  color: #008cff;
+  color: #42b883;
 }
 
 .dialog {
